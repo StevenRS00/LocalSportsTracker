@@ -1,8 +1,13 @@
 from datetime import datetime
-from localsportstracker import db
+from localsportstracker import db, login_manager
+from flask_login import UserMixin
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -25,3 +30,11 @@ class Event(db.Model):
 
     def __repr__(self):
         return f"Event('{self.title}', '{self.date_posted}')"
+
+
+'''
+Stuff to add to Event Class
+Location
+type of sport
+when it's happening
+'''
