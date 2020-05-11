@@ -1,2 +1,3 @@
 # LocalSportsTracker
-An app that takes in user input as events for local sports events
+An app that allows users to create accounts and post events for local sports events and then displays them for others to see.
+Has CRUD Functionality and allows users to reset passwords.
