@@ -32,6 +32,7 @@
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if current_user.is_authenticated%}
+              <a class="nav-item nav-link" href="{{ url_for('new_post') }}">New Post</a>
               <a class="nav-item nav-link" href="{{ url_for('account') }}">Account</a>
               <a class="nav-item nav-link" href="{{ url_for('logout') }}">Logout</a>
               {% else %}
@@ -62,11 +63,13 @@
             <h3>Our Sidebar</h3>
             <p class='text-muted side-color'>
               <ul class="list-group">
-                <li class="list-group-item list-group-item-light">Latest Posts</li>
-                <li class="list-group-item list-group-item-light">Anouncements</li>
+                <li class="list-group-item list-group-item-light"><a href="{{ url_for('anouncements') }}">Anouncements</a></li>
               </ul>
             </p>
           </div>
+          <img src="https://images.unsplash.com/photo-1490326149782-dd42fa59bd9f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" class="rounded float-right img-fluid">
+          <img src="https://images.unsplash.com/photo-1567019001814-57350903e2af?ixlib=rb-1.2.1&auto=format&fit=crop&w=1053&q=80" class="rounded float-right img-fluid">
+          <img src="https://images.unsplash.com/photo-1562571758-400e09ba69a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1052&q=80" class="rounded float-right img-fluid">
         </div>
       </div>
     </main>

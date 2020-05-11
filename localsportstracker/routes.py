@@ -3,11 +3,12 @@ import secrets
 from PIL import Image
 from flask import render_template, url_for, flash, redirect, request
 from localsportstracker import app, db, bcrypt, mail
-from localsportstracker.forms import RegistrationForm, LoginForm, UpdateAccountForm, RequestResetForm, ResetPasswordForm
+from localsportstracker.forms import RegistrationForm, LoginForm, UpdateAccountForm, RequestResetForm, ResetPasswordForm, PostForm
 from localsportstracker.models import User, Event
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 
+'''
 posts = [
     {
         'author': 'Steven Schreiber',
@@ -22,17 +23,24 @@ posts = [
         'date_posted': 'April 21, 2020'
     }
 ]
-
+'''
 
 @app.route("/")
 @app.route("/home")
 def home():
+    posts = Event.query.all() # for new post
     return render_template('home.html', posts=posts)
+
 
 
 @app.route("/about")
 def about():
     return render_template('about.html', title='About')
+
+
+@app.route("/anouncements")
+def anouncements():
+    return render_template('anouncements.html', title='Anouncements')
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -88,6 +96,7 @@ def save_picture(form_picture):
 
     return picture_fn
 
+
 @app.route("/account", methods=['GET', 'POST'])
 @login_required
 def account():
@@ -105,18 +114,19 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
     image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
-    return render_template('account.html', title='Account', image_file=image_file, form=form )
+    return render_template('account.html', title='Account', image_file=image_file, form=form)
 
 
 def send_reset_email(user):
     token = user.get_reset_token()
-    msg = Message('Password Reset Request', sender = 'noreply@gmail.com', recipients = [user.email])
+    msg = Message('Password Reset Request', sender='noreply@gmail.com', recipients=[user.email])
     msg.body = f'''To reset your password, visit the following link:
 {url_for('reset_token', token=token, _external=True)}
 
 If you did not make this request ignore this email and no changes will be made.
 '''
     mail.send(msg)
+
 
 @app.route("/reset_password", methods=['GET', 'POST'])
 def reset_request():
@@ -129,6 +139,7 @@ def reset_request():
         flash('An email has been set with instuctions to reset your password.', 'info')
         return redirect(url_for('login'))
     return render_template('reset_request.html', title='Reset Password', form=form)
+
 
 @app.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_token(token):
@@ -146,4 +157,55 @@ def reset_token(token):
         db.session.commit()
         flash('Your password has been updated! You can now login', 'success')
         return redirect(url_for('login'))
-    return render_template('reset_token.html', title='Reset Password',form = form)
+    return render_template('reset_token.html', title='Reset Password', form=form)
+
+# Create new post
+@app.route('/post/new', methods=['GET','POST'])
+@login_required
+def new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Event(title=form.title.data, content=form.content.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post has been created!', 'success')
+        return redirect(url_for('home'))
+    return render_template('create_post.html', title='New Post',
+                            form=form, legend='New Post')
+
+
+@app.route("/post/<int:post_id>")
+def post(post_id):
+    post = Event.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
+
+@app.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_post(post_id):
+    post = Event.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('post', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+    return render_template('create_post.html', title='Update Post',
+                            form=form, legend='Update Post')
+
+
+@app.route("/post/<int:post_id>/delete", methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Event.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('home'))

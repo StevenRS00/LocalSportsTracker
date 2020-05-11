@@ -5,6 +5,12 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 
+'''
+This file takes care of initializing all of the instances of the modules that
+we imported using pip.
+It also takes care of the configs for sending an email/setting up the database
+'''
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'e23a0a5dfd5e876b95844f1a749a3135'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -21,3 +27,4 @@ app.config['MAIL_PASSWORD'] = os.environ.get('EMAIL_PASS')
 mail = Mail(app)
 
 from localsportstracker import routes
+# This is imported at the bottom because this gets rid of the circular importing issue

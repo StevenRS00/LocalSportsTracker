@@ -3,6 +3,10 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from localsportstracker import db, login_manager, app
 from flask_login import UserMixin
 
+'''
+This sets up what our model classes will hold.
+
+'''
 
 @login_manager.user_loader
 def load_user(user_id):
